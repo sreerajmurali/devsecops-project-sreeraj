@@ -1,12 +1,12 @@
 pipeline {
-    agent any
-    stages {
-        stage('Build') {
+  agent any
+
+  stages {
+      stage('Build Artifact') {
             steps {
-                script {
-                    sh 'mvn clean package -DskipTests=true -DargLine="--add-opens=java.base/java.lang=ALL-UNNAMED"'
-                }
+              sh "mvn clean package -DskipTests=true"
+              archive 'target/*.jar' //so that they can be downloaded later
             }
-        }
+        }   
     }
 }
