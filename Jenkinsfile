@@ -26,14 +26,17 @@ pipeline {
         }
         stage('Docker Build and Push') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub') {
-                        def app = docker.build("sreerajmurali/numeric-app:${env.GIT_COMMIT}")
-                        app.push()
-            
-          }
+                withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
+                    sh 'echo "Environment Variables:"'
+                    sh 'printenv'
+                    sh 'echo "Docker Info:"'
+                    sh 'sudo docker info'
+                    sh 'echo "Building Docker Image:"'
+                    sh 'sudo docker build -t sreerajmurali/numeric-app:""$GIT_COMMIT"" . || (echo "Docker build failed"; exit 1)'
+                    sh 'echo "Pushing Docker Image:"'
+                    sh 'sudo docker push sreerajmurali/numeric-app:""$GIT_COMMIT"" || (echo "Docker push failed"; exit 1)'
         }
       }
     }
-   }
+  }
 }
