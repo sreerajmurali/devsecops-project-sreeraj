@@ -36,8 +36,8 @@ pipeline {
             script {
             retry(3) {
                 docker.withRegistry('https://index.docker.io/v1/', 'docker-hub') {
-                    sh 'docker push sreerajmurali/numeric-app:"$GIT_COMMIT"'
-                 }
+    docker.image("sreerajmurali/numeric-app:${env.GIT_COMMIT}").push()
+}
             }
          }
       }
