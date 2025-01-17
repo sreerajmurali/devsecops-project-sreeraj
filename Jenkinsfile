@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         MAVEN_OPTS = '--add-opens java.base/java.lang=ALL-UNNAMED'
-        DOCKER_IMAGE = "sreerajmurali/numeric-app"
     }
 
     stages {
@@ -25,22 +24,13 @@ pipeline {
                 }
             }
         }
-
         stage('Docker Build and Push') {
-            steps {
-                script {
-                    def commitId = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    sh 'printenv'
-                    sh "docker build -t ${DOCKER_IMAGE}:${commitId} ."
-                    sh "docker push ${DOCKER_IMAGE}:${commitId}"
-                }
-            }
+        steps {
+        //withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
+          sh 'printenv'
+          sh 'docker build -t sreerajmurali/numeric-app:""$GIT_COMMIT"" .'
+          sh 'docker push sreerajmurali/numeric-app:""$GIT_COMMIT""'
         }
+      }
     }
-
-    post {
-        always {
-            cleanWs()
-        }
-    }
-}
+  }
