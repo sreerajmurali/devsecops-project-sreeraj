@@ -31,14 +31,16 @@ pipeline {
             }
           }
         
-        stage('Docker Push') {
+       stage('Docker Push') {
             steps {
             script {
-            docker.withRegistry('https://index.docker.io/v1/', 'docker-hub') {
-                sh 'docker push sreerajmurali/numeric-app:"$GIT_COMMIT"'
-                }
-              }
+            retry(3) {
+                docker.withRegistry('https://index.docker.io/v1/', 'docker-hub') {
+                    sh 'docker push sreerajmurali/numeric-app:"$GIT_COMMIT"'
+                 }
             }
-          }
-        }
+         }
+      }
+    }
+  }
 }   
