@@ -30,7 +30,7 @@ pipeline {
                     sh 'echo "Environment Variables:"'
                     sh 'printenv'
                     sh 'echo "Docker Info:"'
-                    sh 'docker info'
+                    sh 'sudo docker info'
                     sh 'echo "Building Docker Image:"'
                     sh 'sudo docker build -t sreerajmurali/numeric-app:""$GIT_COMMIT"" .'
                     sh 'echo "Pushing Docker Image:"'
