@@ -37,17 +37,16 @@ pipeline {
               }
          }  
 
-        stage('Docker Login') {
+    stage('Docker Login and Push') {
     steps {
-        sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+        script {
+            withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: sreerajmurali, passwordVariable: password123)]) {
+                sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                sh 'docker push sreerajmurali/numeric-app:${GIT_COMMIT}'
+            }
+        }
     }
 }
-stage('Docker Push') {
-    steps {
-        sh 'docker push sreerajmurali/numeric-app:${GIT_COMMIT}'
-    }
-}
-
         
       }   
 }
