@@ -27,11 +27,9 @@ pipeline {
         
         stage('Docker Build') {
             steps {
-                script {
-                    sudo docker.build('sreerajmurali/numeric-app')
-                }
+               sh 'sudo docker build -t sreerajmurali/numeric-app:""$GIT_COMMIT"" .'
             }
-        }
+          }
         
         stage('Docker Push') {
             steps {
