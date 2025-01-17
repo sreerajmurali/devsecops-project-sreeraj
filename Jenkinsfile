@@ -37,21 +37,17 @@ pipeline {
               }
          }  
 
-         stage('Docker Login') {
+        stage('Docker Login') {
     steps {
-        withDockerRegistry([credentialsId: 'docker-hub', url: '']) {
-            sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
-        }
+        sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+    }
+}
+stage('Docker Push') {
+    steps {
+        sh 'docker push sreerajmurali/numeric-app:${GIT_COMMIT}'
     }
 }
 
-        stage('Docker Push') {
-            steps {
-               withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
-              //  sh 'sudo docker push sreerajmurali/numeric-app:""$GIT_COMMIT""'
-              sh 'docker push sreerajmurali/numeric-app:${GIT_COMMIT}'
-              }
-             }
-          }
+        
       }   
 }
