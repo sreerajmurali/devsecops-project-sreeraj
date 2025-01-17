@@ -28,7 +28,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    docker.build('sreerajmurali/numeric-app')
+                    sudo docker.build('sreerajmurali/numeric-app')
                 }
             }
         }
