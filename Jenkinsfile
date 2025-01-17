@@ -31,6 +31,20 @@ pipeline {
             }
           }
         
+        stage('Debug') {
+        steps {
+        sh 'echo "GIT_COMMIT: ${GIT_COMMIT}"'
+              }
+         }  
+
+         stage('Docker Login') {
+    steps {
+        withDockerRegistry([credentialsId: 'docker-hub', url: '']) {
+            sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+        }
+    }
+}
+
         stage('Docker Push') {
             steps {
                withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
