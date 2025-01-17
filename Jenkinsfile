@@ -26,7 +26,7 @@ pipeline {
         }
         stage('Docker Build and Push') {
             steps {
-                // withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
+                withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
                     sh 'echo "Environment Variables:"'
                     sh 'printenv'
                     sh 'echo "Docker Info:"'
@@ -39,3 +39,4 @@ pipeline {
       }
     }
   }
+}
