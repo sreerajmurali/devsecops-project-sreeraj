@@ -35,7 +35,7 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry([credentialsId: 'docker-hub', url: '']) {
-                        docker.image('sreerajmurali/numeric-app').push('latest')
+                    sh 'docker push sreerajmurali/numeric-app:""$GIT_COMMIT""'
                     }
                 }
             }
