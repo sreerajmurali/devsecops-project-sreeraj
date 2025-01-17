@@ -34,7 +34,7 @@ pipeline {
         stage('Docker Push') {
             steps {
                withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
-               sh 'docker push sreerajmurali/numeric-app:""$GIT_COMMIT""'
+               sh 'sudo docker push sreerajmurali/numeric-app:""$GIT_COMMIT""'
               }
              }
           }
