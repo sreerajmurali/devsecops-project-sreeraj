@@ -16,8 +16,10 @@ spec:
         app: devsecops
     spec:
       containers:
-      - image: replace
+      - image: sreerajmurali/numeric-app:$GIT_COMMIT
         name: devsecops-container
+      imagePullSecrets:
+      - name: docker-hub-secret
 ---
 apiVersion: v1
 kind: Service

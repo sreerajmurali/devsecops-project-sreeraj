@@ -46,5 +46,22 @@ pipeline {
         //       }
         //      }
         //   }
-      }   
+        stage('Kubernetes Deployment - DEV') {
+    steps {
+        withKubeConfig([credentialsId: 'kubeconfig']) {
+            script {
+                try {
+                    sh "sed -i 's#replace#sreerajmurali/numeric-app:${GIT_COMMIT}#g' k8s_deployment_service.yaml"
+                    sh "kubectl apply -f k8s_deployment_service.yaml"
+                } catch (Exception e) {
+                    echo "Deployment failed: ${e.message}"
+                    error("Stopping pipeline due to deployment failure.")
+                }
+            }
+        }
+    }
+}
+    
+  }
+      
 }
