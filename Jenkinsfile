@@ -38,29 +38,28 @@ pipeline {
         //  }  
 
          
-        // stage('Docker Push') {
-        //     steps {
-        //        withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
-        //       //  sh 'sudo docker push sreerajmurali/numeric-app:""$GIT_COMMIT""'
-        //       sh 'docker push sreerajmurali/numeric-app:${GIT_COMMIT}'
-        //       }
-        //      }
-        //   }
-        stage('Kubernetes Deployment - DEV') {
-    steps {
-        withKubeConfig([credentialsId: 'kubeconfig']) {
-            script {
-                try {
-                    sh "sed -i 's#replace#sreerajmurali/numeric-app:${GIT_COMMIT}#g' k8s_deployment_service.yaml"
-                    sh "kubectl apply -f k8s_deployment_service.yaml"
-                } catch (Exception e) {
-                    echo "Deployment failed: ${e.message}"
-                    error("Stopping pipeline due to deployment failure.")
-                }
-            }
-        }
-    }
-}
+        stage('Docker Push') {
+            steps {
+               withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
+              sh 'sudo docker push sreerajmurali/numeric-app:${GIT_COMMIT}'
+              }
+             }
+          }
+//         stage('Kubernetes Deployment - DEV') {
+//     steps {
+//         withKubeConfig([credentialsId: 'kubeconfig']) {
+//             script {
+//                 try {
+//                     sh "sed -i 's#replace#sreerajmurali/numeric-app:${GIT_COMMIT}#g' k8s_deployment_service.yaml"
+//                     sh "kubectl apply -f k8s_deployment_service.yaml"
+//                 } catch (Exception e) {
+//                     echo "Deployment failed: ${e.message}"
+//                     error("Stopping pipeline due to deployment failure.")
+//                 }
+//             }
+//         }
+//     }
+// }
     
   }
       
