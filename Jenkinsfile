@@ -31,11 +31,11 @@ pipeline {
             }
           }
         
-        stage('Debug') {
-        steps {
-        sh 'echo "GIT_COMMIT: ${GIT_COMMIT}"'
-              }
-         }  
+        // stage('Debug') {
+        // steps {
+        // sh 'echo "GIT_COMMIT: ${GIT_COMMIT}"'
+        //       }
+        //  }  
 
          
         // stage('Docker Push') {
