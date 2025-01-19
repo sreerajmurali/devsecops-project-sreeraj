@@ -24,27 +24,12 @@ pipeline {
                 }
             }
         }
-        stage('Docker Build and Push') {
-    steps {
-        script {
-            try {
-                withDockerRegistry([credentialsId: 'docker-hub', url: '']) {
-                    sh 'printenv'
-                    sh 'docker build -t sreerajmurali/numeric-app:$GIT_COMMIT .'
-                    sh 'docker push sreerajmurali/numeric-app:$GIT_COMMIT'
-                }
-            } catch (Exception e) {
-                echo "Docker registry login failed: ${e.message}"
-                error("Stopping pipeline due to Docker registry login failure.")
+        
+        stage('Docker Build') {
+            steps {
+               sh 'sudo docker build -t sreerajmurali/numeric-app:""$GIT_COMMIT"" .'
             }
-        }
-    }
-}
-        // stage('Docker Build') {
-        //     steps {
-        //        sh 'sudo docker build -t sreerajmurali/numeric-app:""$GIT_COMMIT"" .'
-        //     }
-        //   }
+          }
         
         // stage('Debug') {
         // steps {
