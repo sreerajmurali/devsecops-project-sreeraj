@@ -27,7 +27,7 @@ pipeline {
         
         stage('Docker Build') {
             steps {
-               sh 'docker build -t sreerajmurali/numeric-app:latest .'
+               sh 'docker build -t sreerajmurali/numeric-app:""$GIT_COMMIT"" .'
             }
           }
         
@@ -41,7 +41,7 @@ pipeline {
         stage('Docker Push') {
             steps {
                withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
-              sh 'docker push sreerajmurali/numeric-app:latest'
+              sh 'docker push sreerajmurali/numeric-app:""$GIT_COMMIT""'
               }
              }
           }
