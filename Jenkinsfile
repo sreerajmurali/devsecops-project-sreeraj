@@ -35,8 +35,15 @@ pipeline {
         }
       }
     }
-          stage('Docker Build and Push') {
-         steps {
+
+        stage('SonarQube - SAST') {
+        steps {
+        sh " mvn sonar:sonar -Dsonar.projectKey=numeric-application -Dsonar.host.url=http://devsecops-cloudvm2.eastus.cloudapp.azure.com:9000 -Dsonar.login=b3ac25c70fc69bde37d0cc9bdc0268739eb62c1b"
+          }
+        }
+
+        stage('Docker Build and Push') {
+        steps {
         withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
           sh 'printenv'
           sh 'docker build -t sreerajmurali/numeric-app:""$GIT_COMMIT"" .'
