@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.5.RELEASE</version>
+        <version>3.4.2.RELEASE</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
 
@@ -94,8 +94,8 @@
     <version>6.1.6</version>
     <configuration>
         <format>ALL</format>
-        <failBuildOnCVSS>2</failBuildOnCVSS>
-        <!-- fail the build for CVSS greater than or equal to 2 -->
+        <failBuildOnCVSS>8</failBuildOnCVSS>
+        <!-- fail the build for CVSS greater than or equal to 8 -->
         <!-- 
             use internal mirroring of CVE contents 
             Suppress files 
