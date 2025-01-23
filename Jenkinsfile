@@ -12,7 +12,7 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
             }
         }
-
+        
         stage('Unit Tests - JUnit and Jacoco') {
             steps {
                 sh 'mvn test'
@@ -24,8 +24,46 @@ pipeline {
                 }
             }
         }
+
+        stage('Mutation Tests - PIT') {
+        steps {
+        sh "mvn org.pitest:pitest-maven:mutationCoverage"
+         }
+         post {
+         always {
+          pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
+        }
+      }
+    }
+
+       
+    stage('SonarQube - SAST') {
+      steps {
+        withSonarQubeEnv('SonarQube') {
+          sh "mvn sonar:sonar -Dsonar.projectKey=numeric-application -Dsonar.host.url=http://devsecops-cloudvm2.eastus.cloudapp.azure.com:9000"
+        }
+        timeout(time: 2, unit: 'MINUTES') {
+          script {
+            waitForQualityGate abortPipeline: true
+          }
+        } 
+      }
+    }
+    
+        stage('Vulnerability Scan - Docker ') {
+          steps {
+            sh "mvn dependency-check:check"
+          }
+          post {
+            always {
+              dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
+            }
+          }
+        }
+
+
         stage('Docker Build and Push') {
-         steps {
+        steps {
         withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
           sh 'printenv'
           sh 'docker build -t sreerajmurali/numeric-app:""$GIT_COMMIT"" .'
