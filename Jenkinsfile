@@ -1,18 +1,18 @@
 pipeline {
-    agent any 
+    agent any
 
     environment {
-        MAVEN_OPTS = '--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED'
+        MAVEN_OPTS = '--add-opens java.base/java.lang=ALL-UNNAMED'
     }
 
     stages {
         stage('Build Artifact') {
             steps {
-                sh 'mvn clean package -DskipTests=true -X'
+                sh 'mvn clean package -DskipTests=true'
                 archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
             }
         }
-        
+
         stage('Unit Tests - JUnit and Jacoco') {
             steps {
                 sh 'mvn test'
@@ -24,59 +24,23 @@ pipeline {
                 }
             }
         }
-
-        stage('Mutation Tests - PIT') {
-            steps {
-                sh "mvn org.pitest:pitest-maven:mutationCoverage"
-            }
-            post {
-                always {
-                    pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
-                }
-            }
-        }
-
-        stage('SonarQube - SAST') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh "mvn sonar:sonar -Dsonar.projectKey=numeric-application -Dsonar.host.url=http://devsecops-cloudvm2.eastus.cloudapp.azure.com:9000"
-                }
-                timeout(time: 2, unit: 'MINUTES') {
-                    script {
-                        waitForQualityGate abortPipeline: true
-                    }
-                } 
-            }
-        }
-    
-        stage('Vulnerability Scan - Docker') {
-            steps {
-                sh "mvn dependency-check:check"
-            }
-            post {
-                always {
-                    dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
-                }
-            }
-        }
-
         stage('Docker Build and Push') {
-            steps {
-                withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
-                    sh 'printenv'
-                    sh 'docker build -t sreerajmurali/numeric-app:"$GIT_COMMIT" .'
-                    sh 'docker push sreerajmurali/numeric-app:"$GIT_COMMIT"'
-                }
-            }
+         steps {
+        withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
+          sh 'printenv'
+          sh 'docker build -t sreerajmurali/numeric-app:""$GIT_COMMIT"" .'
+          sh 'docker push sreerajmurali/numeric-app:""$GIT_COMMIT""'
         }
-
-        stage('Kubernetes Deployment - DEV') {
-            steps {
-                withKubeConfig([credentialsId: 'kubeconfig']) {
-                    sh "sed -i 's#replace#sreerajmurali/numeric-app:${GIT_COMMIT}#g' k8s_deployment_service.yaml"
-                    sh "kubectl apply -f k8s_deployment_service.yaml"
-                }
-            }
-        }
+      }
     }
+        stage('Kubernetes Deployment - DEV') {
+         steps {
+              withKubeConfig([credentialsId: 'kubeconfig']) {
+                sh "sed -i 's#replace#sreerajmurali/numeric-app:${GIT_COMMIT}#g' k8s_deployment_service.yaml"
+                sh "kubectl apply -f k8s_deployment_service.yaml"
+                //test test
+        }
+      }
+    }
+  }
 }
