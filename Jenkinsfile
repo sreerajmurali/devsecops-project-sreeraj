@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent any 
 
     environment {
         MAVEN_OPTS = '--add-opens java.base/java.lang=ALL-UNNAMED'
@@ -8,7 +8,8 @@ pipeline {
     stages {
         stage('Build Artifact') {
             steps {
-                sh 'mvn clean package -DskipTests=true'
+                //sh 'mvn clean package -DskipTests=true'
+                sh 'mvn clean package -DskipTests=true -X'
                 archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
             }
         }
