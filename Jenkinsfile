@@ -17,11 +17,22 @@ pipeline {
             steps {
                 sh 'mvn test'
             }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                    jacoco execPattern: 'target/jacoco.exec'
+                }
+            }
         }
 
         stage('Mutation Tests - PIT') {
             steps {
                 sh "mvn org.pitest:pitest-maven:mutationCoverage"
+            }
+            post {
+                always {
+                    pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
+                }
             }
         }
 
@@ -49,14 +60,19 @@ pipeline {
                     }
                 }
             }
+            post {
+                always {
+                    dependencyCheckPublisher pattern: 'target/dependency-check-report.xml', failedTotalCritical: 0, unstableTotalCritical: 10
+                }
+            }
         }
 
         stage('Docker Build and Push') {
             steps {
                 withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
                     sh 'printenv'
-                    sh 'docker build -t sreerajmurali/numeric-app:""$GIT_COMMIT"" .'
-                    sh 'docker push sreerajmurali/numeric-app:""$GIT_COMMIT""'
+                    sh 'docker build -t sreerajmurali/numeric-app:"$GIT_COMMIT" .'
+                    sh 'docker push sreerajmurali/numeric-app:"$GIT_COMMIT"'
                 }
             }
         }
@@ -69,14 +85,14 @@ pipeline {
                 }
             }
         }
+    }
 
-      post {
-           always {
-             junit 'target/surefire-reports/*.xml'
-             jacoco execPattern: 'target/jacoco.exec'
-             pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
-             dependencyCheckPublisher pattern: 'target/dependency-check-report.xml', failedTotalCritical: 0, unstableTotalCritical: 10
-           }
-        }    
+    post {
+        always {
+            junit 'target/surefire-reports/*.xml'
+            jacoco execPattern: 'target/jacoco.exec'
+            pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
+            dependencyCheckPublisher pattern: 'target/dependency-check-report.xml', failedTotalCritical: 0, unstableTotalCritical: 10
+        }
     }
 }
