@@ -56,7 +56,7 @@ pipeline {
                         sh "mvn dependency-check:check"
                     } catch (Exception e) {
                         echo 'Ignoring vulnerabilities found in Dependency Check.'
-                        currentBuild.result = 'SUCCESS' // or 'UNSTABLE' if you prefer
+                        currentBuild.result = 'SUCCESS' or 'UNSTABLE' if you prefer
                     }
                 }
             }
