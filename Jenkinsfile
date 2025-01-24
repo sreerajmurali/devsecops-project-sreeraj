@@ -65,7 +65,11 @@ pipeline {
                     "Trivy Scan": {
                           sh "bash trivy-docker-image-scan.sh"
                         //sh "docker run --rm -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy image --severity CRITICAL python:3.4-alpine"
-                    }
+                    },
+                    "OPA Conftest": {
+                          sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-docker-security.rego Dockerfile'
+                }
+
                 )
             }
             post {
