@@ -63,7 +63,8 @@ pipeline {
                         }
                     },
                     "Trivy Scan": {
-                        sh "docker run --rm -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy image --severity CRITICAL python:3.4-alpine"
+                          sh "bash trivy-docker-image-scan.sh"
+                        //sh "docker run --rm -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy image --severity CRITICAL python:3.4-alpine"
                     }
                 )
             }
