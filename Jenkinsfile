@@ -51,14 +51,21 @@ pipeline {
         
         stage('Vulnerability Scan - Docker') {
             steps {
-                script {
-                    try {
-                        sh "mvn dependency-check:check"
-                    } catch (Exception e) {
-                        echo 'Ignoring vulnerabilities found in Dependency Check.'
-                        currentBuild.result = 'SUCCESS' // or 'UNSTABLE' if you prefer
+                parallel (
+                    "Dependency Check": {
+                        script {
+                            try {
+                                sh "mvn dependency-check:check"
+                            } catch (Exception e) {
+                                echo 'Ignoring vulnerabilities found in Dependency Check.'
+                                currentBuild.result = 'SUCCESS' // or 'UNSTABLE' if you prefer
+                            }
+                        }
+                    },
+                    "Trivy Scan": {
+                        sh "docker run --rm -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy image --severity CRITICAL python:3.4-alpine"
                     }
-                }
+                )
             }
             post {
                 always {
@@ -92,7 +99,6 @@ pipeline {
             junit 'target/surefire-reports/*.xml'
             jacoco execPattern: 'target/jacoco.exec'
             pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
-            //dependencyCheckPublisher pattern: 'target/dependency-check-report.xml', failedTotalCritical: 0, unstableTotalCritical: 10
         }
     }
 }
