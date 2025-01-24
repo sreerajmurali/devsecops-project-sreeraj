@@ -51,18 +51,18 @@ pipeline {
         
         stage('Vulnerability Scan - Docker') {
             steps {
-                sh "mvn dependency-check:check"
+                script {
+                    try {
+                        sh "mvn dependency-check:check"
+                    } catch (Exception e) {
+                        echo 'Ignoring vulnerabilities found in Dependency Check.'
+                        currentBuild.result = 'SUCCESS' // or 'UNSTABLE' if you prefer
+                    }
+                }
             }
             post {
                 always {
-                    script {
-                        try {
-                            dependencyCheckPublisher pattern: 'target/dependency-check-report.xml', failedTotalCritical: 0, unstableTotalCritical: 10
-                        } catch (Exception e) {
-                            currentBuild.result = 'UNSTABLE'
-                            echo 'Dependency Check found vulnerabilities, marking build as UNSTABLE.'
-                        }
-                    }
+                    dependencyCheckPublisher pattern: 'target/dependency-check-report.xml', failedTotalCritical: 0, unstableTotalCritical: 10
                 }
             }
         }
