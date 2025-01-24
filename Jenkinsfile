@@ -55,7 +55,14 @@ pipeline {
             }
             post {
                 always {
-                    dependencyCheckPublisher pattern: 'target/dependency-check-report.xml', failedTotalCritical: 0, unstableTotalCritical: 10
+                    script {
+                        try {
+                            dependencyCheckPublisher pattern: 'target/dependency-check-report.xml', failedTotalCritical: 0, unstableTotalCritical: 10
+                        } catch (Exception e) {
+                            currentBuild.result = 'UNSTABLE'
+                            echo 'Dependency Check found vulnerabilities, marking build as UNSTABLE.'
+                        }
+                    }
                 }
             }
         }
