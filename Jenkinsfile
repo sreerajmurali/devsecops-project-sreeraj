@@ -17,23 +17,12 @@ pipeline {
             steps {
                 sh 'mvn test'
             }
-            // post {
-            //     always {
-            //         junit 'target/surefire-reports/*.xml'
-            //         jacoco execPattern: 'target/jacoco.exec'
-            //     }
-            // }
         }
 
         stage('Mutation Tests - PIT') {
             steps {
                 sh "mvn org.pitest:pitest-maven:mutationCoverage"
             }
-            // post {
-            //     always {
-            //         pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
-            //     }
-            // }
         }
 
         stage('SonarQube - SAST') {
@@ -60,11 +49,6 @@ pipeline {
                     }
                 }
             }
-            // post {
-            //     always {
-            //         dependencyCheckPublisher pattern: 'target/dependency-check-report.xml', failedTotalCritical: 0, unstableTotalCritical: 10
-            //     }
-            // }
         }
 
         stage('Docker Build and Push') {
@@ -93,10 +77,6 @@ pipeline {
              pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
              dependencyCheckPublisher pattern: 'target/dependency-check-report.xml', failedTotalCritical: 0, unstableTotalCritical: 10
            }
-          //  success {
-          //  }
-          //  failure {
-          //  }
-      }    
+        }    
     }
 }
