@@ -9,7 +9,7 @@ pipeline {
         imageName = "sreerajmurali/numeric-app:${GIT_COMMIT}"
         //applicationURL = "http://devsecops-demo.eastus.cloudapp.azure.com/"
         applicationURL = "http://devsecops-cloudvm2.eastus.cloudapp.azure.com"
-        applicationURI = "/increment/99"
+        applicationURI = "increment/99"
     }
 
     stages {
