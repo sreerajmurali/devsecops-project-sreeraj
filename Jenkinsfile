@@ -9,7 +9,6 @@ pipeline {
         imageName = "sreerajmurali/numeric-app:${GIT_COMMIT}"
         applicationURL = "http://devsecops-demo.eastus.cloudapp.azure.com/"
         applicationURI = "/increment/99"
-
     }
 
     stages {
@@ -71,12 +70,10 @@ pipeline {
                     },
                     "Trivy Scan": {
                           sh "bash trivy-docker-image-scan.sh"
-                        //sh "docker run --rm -v $HOME/Library/Caches:/root/.cache/ aquasec/trivy image --severity CRITICAL python:3.4-alpine"
                     },
                     "OPA Conftest": {
                           sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-docker-security.rego Dockerfile'
-                }
-
+                    }
                 )
             }
             post {
@@ -90,69 +87,51 @@ pipeline {
             steps {
                 withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
                     sh 'printenv'
-                    sh 'sudo docker build -t sreerajmurali/numeric-app:"$GIT_COMMIT" .'
-                    sh 'docker push sreerajmurali/numeric-app:"$GIT_COMMIT"'
+                    sh 'sudo docker build -t sreerajmurali/numeric-app:${GIT_COMMIT} .'
+                    sh 'docker push sreerajmurali/numeric-app:${GIT_COMMIT}'
                 }
             }
         }
 
-        // stage('Vulnerability Scan - Kubernetes') {
-        //     steps {
-        //          sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
-        //     }
-        // }
-
         stage('Vulnerability Scan - Kubernetes') {
             steps {
                 parallel(
-                "OPA Scan": {
-                sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
-         },
-                "Kubesec Scan": {
-                sh "bash kubesec-scan.sh"
-          },
-                "Trivy Scan": {
-                  script {
+                    "OPA Scan": {
+                        sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
+                    },
+                    "Kubesec Scan": {
+                        sh "bash kubesec-scan.sh"
+                    },
+                    "Trivy Scan": {
+                        script {
                             try {
                                 sh "bash trivy-k8s-scan.sh"
                             } catch (Exception e) {
                                 echo 'Ignoring vulnerabilities found in Trivy Kubernetes Scan.'
                                 currentBuild.result = 'SUCCESS'
-                sh "bash trivy-k8s-scan.sh"
-                            }    
-                  }
-          }
-        )
-      }
-    }
-
-
-        // stage('Kubernetes Deployment - DEV') {
-        //     steps {
-        //         withKubeConfig([credentialsId: 'kubeconfig']) {
-        //             sh "sed -i 's#replace#sreerajmurali/numeric-app:${GIT_COMMIT}#g' k8s_deployment_service.yaml"
-        //             sh "kubectl apply -f k8s_deployment_service.yaml"
-        //         }
-        //     }
-        // }
+                            }
+                        }
+                    }
+                )
+            }
+        }
 
         stage('K8S Deployment - DEV') {
             steps {
-            parallel(
-             "Deployment": {
-             withKubeConfig([credentialsId: 'kubeconfig']) {
-             sh "bash k8s-deployment.sh"
+                parallel(
+                    "Deployment": {
+                        withKubeConfig([credentialsId: 'kubeconfig']) {
+                            sh "bash k8s-deployment.sh"
+                        }
+                    },
+                    "Rollout Status": {
+                        withKubeConfig([credentialsId: 'kubeconfig']) {
+                            sh "bash k8s-deployment-rollout-status.sh"
+                        }
+                    }
+                )
             }
-          },
-          "Rollout Status": {
-            withKubeConfig([credentialsId: 'kubeconfig']) {
-              sh "bash k8s-deployment-rollout-status.sh"
-            }
-          }
-        )
-      }
-    }
-
+        }
     }
 
     post {
