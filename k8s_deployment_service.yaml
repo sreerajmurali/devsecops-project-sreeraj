@@ -15,7 +15,7 @@ spec:
       labels:
         app: devsecops
     spec:
-       volumes:
+      volumes:
       - name: vol
         emptyDir: {}
       serviceAccountName: default
@@ -29,8 +29,6 @@ spec:
           runAsNonRoot: true
           runAsUser: 100
           readOnlyRootFilesystem: true
-
-
 ---
 apiVersion: v1
 kind: Service
