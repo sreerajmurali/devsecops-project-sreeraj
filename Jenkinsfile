@@ -7,7 +7,7 @@ pipeline {
         containerName = "devsecops-container"
         serviceName = "devsecops-svc"
         imageName = "sreerajmurali/numeric-app:${GIT_COMMIT}"
-        applicationURL = "http://devsecops-demo.eastus.cloudapp.azure.com/"
+        applicationURL = "http://devsecops-demo.eastus.cloudapp.azure.com"
         applicationURI = "/increment/99"
     }
 
@@ -133,6 +133,24 @@ pipeline {
             }
         }
     }
+    
+        stage('Integration Tests - DEV') {
+            steps {
+            script {
+               try {
+                 withKubeConfig([credentialsId: 'kubeconfig']) {
+                 sh "bash integration-test.sh"
+            }
+          } catch (e) {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
+              sh "kubectl -n default rollout undo deploy ${deploymentName}"
+            }
+            throw e
+          }
+        }
+      }
+    }
+  
 
     post {
         always {
@@ -141,4 +159,4 @@ pipeline {
             pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
         }
     }
-}
+} 
