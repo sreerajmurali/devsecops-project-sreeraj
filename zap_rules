@@ -1,4 +1,3 @@
-# Example zap_rules file
-10010   INFO    Information disclosure - debug error messages
-10020   IGNORE  Information disclosure - sensitive information in URL
-10021   FAIL    Information disclosure - private IP address
+10010\tINFO\tInformation disclosure - debug error messages
+10020\tIGNORE\tInformation disclosure - sensitive information in URL
+10021\tFAIL\tInformation disclosure - private IP address
