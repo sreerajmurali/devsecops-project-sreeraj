@@ -150,15 +150,26 @@ pipeline {
                 }
             }
         }
-       stage('OWASP ZAP - DAST') {
+    //    stage('OWASP ZAP - DAST') {
+    //         steps {
+    //             withKubeConfig([credentialsId: 'kubeconfig']) {
+    //             sh 'docker pull ghcr.io/zaproxy/zaproxy:weekly'
+    //             sh 'docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:weekly zap.sh'
+    //             // sh 'bash zap.sh'
+    //     }
+    //   }
+    // }
+        stage('OWASP ZAP - DAST') {
             steps {
                 withKubeConfig([credentialsId: 'kubeconfig']) {
-                sh 'docker pull ghcr.io/zaproxy/zaproxy:weekly'
-                sh 'docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:weekly zap.sh'
-                // sh 'bash zap.sh'
+                   sh 'docker pull ghcr.io/zaproxy/zaproxy:weekly'
+                   sh 'docker run -v $(pwd):/zap/wrk/:rw -u zap -t ghcr.io/zaproxy:zaproxy:weekly zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true'
+                   sh 'docker exec <container_id> zap-cli quick-scan --self-contained --start-options "-config api.disablekey=true" http://your-target-url'
+                   sh 'docker exec <container_id> zap-cli report -o zap_report.html -f html'
+                   sh 'chmod -R 777 /var/lib/jenkins/workspace/devsecops-numeric-application2/owasp-zap-report'
         }
-      }
     }
+}
 
     }
 
