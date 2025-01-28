@@ -153,7 +153,9 @@ pipeline {
        stage('OWASP ZAP - DAST') {
             steps {
                 withKubeConfig([credentialsId: 'kubeconfig']) {
-                sh 'bash zap.sh'
+                sh 'docker pull ghcr.io/zaproxy/zaproxy:weekly'
+                sh 'docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:weekly zap.sh'
+                //sh 'bash zap.sh'
         }
       }
     }
@@ -165,6 +167,9 @@ pipeline {
             junit 'target/surefire-reports/*.xml'
             jacoco execPattern: 'target/jacoco.exec'
             pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
+            //dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'owasp-zap-report', reportFiles: 'zap_report.html', reportName: 'OWASP ZAP HTML Report', reportTitles: 'OWASP ZAP HTML Report'])
+
         }
     }
 }
