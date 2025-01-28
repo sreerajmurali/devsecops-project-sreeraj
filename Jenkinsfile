@@ -164,7 +164,7 @@ pipeline {
         withKubeConfig([credentialsId: 'kubeconfig']) {
             script {
                 try {
-                    sh 'docker pull owasp/zap2docker-weekly'
+                    sh 'docker pull zaproxy/zap-weekly'
                     sh 'chmod +x zap.sh'
                     sh './zap.sh'
                 } catch (Exception e) {
