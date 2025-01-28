@@ -1,0 +1,4 @@
+# Example zap_rules file
+INFO-10010    # Information disclosure - debug error messages
+IGNORE-10020  # Information disclosure - sensitive information in URL
+FAIL-10021    # Information disclosure - private IP address

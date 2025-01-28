@@ -159,7 +159,7 @@ pipeline {
     //     }
     //   }
     // }
- stage('OWASP ZAP - DAST') {
+stage('OWASP ZAP - DAST') {
     steps {
         withKubeConfig([credentialsId: 'kubeconfig']) {
             script {
