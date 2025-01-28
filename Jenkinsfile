@@ -7,6 +7,7 @@ pipeline {
         containerName = "devsecops-container"
         serviceName = "devsecops-svc"
         imageName = "sreerajmurali/numeric-app:${GIT_COMMIT}"
+        //applicationURL = "http://devsecops-demo.eastus.cloudapp.azure.com/"
         applicationURL = "http://devsecops-cloudvm2.eastus.cloudapp.azure.com"
         applicationURI = "/increment/99"
     }
@@ -149,29 +150,27 @@ pipeline {
                 }
             }
         }
-    
-        stage('OWASP ZAP - DAST') {
-            steps {
-                withKubeConfig([credentialsId: 'kubeconfig']) {
-                    sh 'docker pull ghcr.io/zaproxy/zaproxy:weekly'
-                    sh 'docker run -d --name zap_dast -e JAVA_OPTS="-Xmx8192m" -v $(pwd):/zap/wrk/:rw -u zap -t ghcr.io/zaproxy/zaproxy:weekly zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true'
-                    sh 'sleep 30' // Increased sleep time
-                    try {
-                        sh 'docker exec zap_dast zap-baseline.py -t http://devsecops-cloudvm2.eastus.cloudapp.azure.com:31456 -r /zap/wrk/zap_report.html --autooff -T 20'
-                    } catch (Exception e) {
-                        echo "ZAP scan failed: ${e.message}"
-                    }
-                    sh 'docker logs zap_dast' // Print logs for debugging
-                    sh 'docker stop zap_dast'
-                    sh 'docker rm zap_dast'
-                }
-            }
-            post {
-                always {
-                    archiveArtifacts artifacts: 'zap_report.html', allowEmptyArchive: true
-                }
-            }
+    //    stage('OWASP ZAP - DAST') {
+    //         steps {
+    //             withKubeConfig([credentialsId: 'kubeconfig']) {
+    //             sh 'docker pull ghcr.io/zaproxy/zaproxy:weekly'
+    //             sh 'docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:weekly zap.sh'
+    //             // sh 'bash zap.sh'
+    //     }
+    //   }
+    // }
+ stage('OWASP ZAP - DAST') {
+    steps {
+        withKubeConfig([credentialsId: 'kubeconfig']) {
+            sh 'docker pull ghcr.io/zaproxy/zaproxy:weekly'
+            sh 'docker run -d --name zap_dast -e JAVA_OPTS="-Xmx8192m" -v $(pwd):/zap/wrk/:rw -u zap -t ghcr.io/zaproxy/zaproxy:weekly zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true'
+            sh 'sleep 20' // Increase sleep time to give ZAP more time to start
+            sh 'docker exec zap_dast zap-baseline.py -t http://devsecops-cloudvm2.eastus.cloudapp.azure.com:31456 -r /zap/wrk/zap_report.html --autooff -T 20'
+            sh 'docker stop zap_dast'
+            sh 'docker rm zap_dast'
         }
+    }
+}
     }
 
     post {
@@ -179,7 +178,9 @@ pipeline {
             junit 'target/surefire-reports/*.xml'
             jacoco execPattern: 'target/jacoco.exec'
             pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
+            //dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
             publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'owasp-zap-report', reportFiles: 'zap_report.html', reportName: 'OWASP ZAP HTML Report', reportTitles: 'OWASP ZAP HTML Report'])
+
         }
     }
 }
