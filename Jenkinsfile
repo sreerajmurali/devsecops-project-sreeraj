@@ -163,7 +163,7 @@ pipeline {
     steps {
         withKubeConfig([credentialsId: 'kubeconfig']) {
             sh 'docker pull ghcr.io/zaproxy/zaproxy:weekly'
-            sh 'docker run -d --name zap_dast -v $(pwd):/zap/wrk/:rw -u zap -t ghcr.io/zaproxy/zaproxy:weekly zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true'
+            sh 'docker run -d --name zap_dast -e JAVA_OPTS="-Xmx8192m" -v $(pwd):/zap/wrk/:rw -u zap -t ghcr.io/zaproxy/zaproxy:weekly zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true'
             sh 'sleep 20' // Increase sleep time to give ZAP more time to start
             sh 'docker exec zap_dast zap-baseline.py -t http://devsecops-cloudvm2.eastus.cloudapp.azure.com:31456 -r /zap/wrk/zap_report.html --autooff -T 20'
             sh 'docker stop zap_dast'
