@@ -7,6 +7,7 @@ chmod 777 $(pwd)
 echo $(id -u):$(id -g)
 
 # Run ZAP API scan with custom rules
+echo "Running ZAP API scan with custom rules..."
 docker run -v $(pwd):/zap/wrk/:rw -t zaproxy/zap-weekly zap-api-scan.py -t $applicationURL:$PORT/v3/api-docs -f openapi -c zap_rules -r zap_report.html
 
 exit_code=$?
