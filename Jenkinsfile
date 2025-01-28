@@ -159,19 +159,19 @@ pipeline {
     //     }
     //   }
     // }
-         stage('OWASP ZAP - DAST') {
-               steps {
-               withKubeConfig([credentialsId: 'kubeconfig']) {
-                sh 'docker pull ghcr.io/zaproxy/zaproxy:weekly'
-                sh 'docker run -v $(pwd):/zap/wrk/:rw -u zap -t ghcr.io/zaproxy/zaproxy:weekly zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true'
-                sh '''
-                docker exec $(docker ps -q -f ancestor=ghcr.io/zaproxy/zaproxy:weekly) zap-cli quick-scan --self-contained --start-options "-config api.disablekey=true" http://your-target-url
-                docker exec $(docker ps -q -f ancestor=ghcr.io/zaproxy/zaproxy:weekly) zap-cli report -o /zap/wrk/zap_report.html -f html
-            '''
+       stage('OWASP ZAP - DAST') {
+    steps {
+        withKubeConfig([credentialsId: 'kubeconfig']) {
+            sh 'docker pull ghcr.io/zaproxy/zaproxy:weekly'
+            sh 'docker run -d --name zap -v $(pwd):/zap/wrk/:rw -u zap -t ghcr.io/zaproxy/zaproxy:weekly zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true'
+            sh 'sleep 10' // Give ZAP some time to start
+            sh 'docker exec zap zap-cli quick-scan --self-contained --start-options "-config api.disablekey=true" http://your-target-url'
+            sh 'docker exec zap zap-cli report -o /zap/wrk/zap_report.html -f html'
+            sh 'docker stop zap'
+            sh 'docker rm zap'
         }
     }
 }
-
     }
 
     post {
