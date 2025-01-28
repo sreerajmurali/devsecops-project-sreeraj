@@ -154,8 +154,8 @@ pipeline {
             steps {
                 withKubeConfig([credentialsId: 'kubeconfig']) {
                 sh 'docker pull ghcr.io/zaproxy/zaproxy:weekly'
-                // sh 'docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:weekly zap.sh'
-                sh 'bash zap.sh'
+                sh 'docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:weekly zap.sh'
+                // sh 'bash zap.sh'
         }
       }
     }
