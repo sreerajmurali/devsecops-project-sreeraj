@@ -7,7 +7,6 @@ pipeline {
         containerName = "devsecops-container"
         serviceName = "devsecops-svc"
         imageName = "sreerajmurali/numeric-app:${GIT_COMMIT}"
-        //applicationURL = "http://devsecops-demo.eastus.cloudapp.azure.com/"
         applicationURL = "http://devsecops-cloudvm2.eastus.cloudapp.azure.com"
         applicationURI = "/increment/99"
     }
@@ -153,48 +152,45 @@ pipeline {
   
         stage('OWASP ZAP - DAST') {
             steps {
-            withKubeConfig([credentialsId: 'kubeconfig']) {
-                script {
-                try {
-                    sh 'docker pull zaproxy/zap-weekly'
-                    sh 'chmod +x zap.sh'
-                    sh './zap.sh'
-                } catch (Exception e) {
-                    echo "An error occurred: ${e.getMessage()}"
+                withKubeConfig([credentialsId: 'kubeconfig']) {
+                    script {
+                        try {
+                            sh 'docker pull zaproxy/zap-weekly'
+                            sh 'chmod +x zap.sh'
+                            sh './zap.sh'
+                        } catch (Exception e) {
+                            echo "An error occurred: ${e.getMessage()}"
+                        }
+                    }
                 }
-              }
             }
-           }
         }   
-     }
 
         stage('K8S CIS Benchmark') {
             steps {
                 script {
-
-                parallel(
-                "Master": {
-                sh "bash cis-master.sh"
-                },
-                "Etcd": {
-                 sh "bash cis-etcd.sh"
-                },
-                "Kubelet": {
-                sh "bash cis-kubelet.sh"
+                    parallel(
+                        "Master": {
+                            sh "bash cis-master.sh"
+                        },  
+                        "Etcd": {
+                            sh "bash cis-etcd.sh"
+                        },
+                        "Kubelet": {
+                            sh "bash cis-kubelet.sh"
+                        }
+                    )
                 }
-             )
-          }
+            }
         }
-        }
+    }
 
     post {
         always {
             junit 'target/surefire-reports/*.xml'
             jacoco execPattern: 'target/jacoco.exec'
             pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
-            //dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
             publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'owasp-zap-report', reportFiles: 'zap_report.html', reportName: 'OWASP ZAP HTML Report', reportTitles: 'OWASP ZAP HTML Report'])
-
         }
     }
 }
