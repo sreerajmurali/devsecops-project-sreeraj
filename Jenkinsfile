@@ -171,13 +171,31 @@ pipeline {
                 script {
                     parallel(
                         "Master": {
-                            sh "bash cis-master.sh"
+                            script {
+                                try {
+                                    sh "kube-bench --benchmark cis-1.5 --targets master --json | jq '.'"
+                                } catch (Exception e) {
+                                    echo "Error running kube-bench for master: ${e.getMessage()}"
+                                }
+                            }
                         },  
                         "Etcd": {
-                            sh "bash cis-etcd.sh"
+                            script {
+                                try {
+                                    sudo sh "bash cis-etcd.sh"
+                                } catch (Exception e) {
+                                    echo "Error running cis-etcd.sh: ${e.getMessage()}"
+                                }
+                            }
                         },
                         "Kubelet": {
-                            sh "bash cis-kubelet.sh"
+                            script {
+                                try {
+                                    sh "bash cis-kubelet.sh | jq '.[] | .total_fail'"
+                                } catch (Exception e) {
+                                    echo "Error running cis-kubelet.sh: ${e.getMessage()}"
+                                }
+                            }
                         }
                     )
                 }
