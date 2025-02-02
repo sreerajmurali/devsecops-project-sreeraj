@@ -150,19 +150,11 @@ pipeline {
                 }
             }
         }
-    //    stage('OWASP ZAP - DAST') {
-    //         steps {
-    //             withKubeConfig([credentialsId: 'kubeconfig']) {
-    //             sh 'docker pull ghcr.io/zaproxy/zaproxy:weekly'
-    //             sh 'docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:weekly zap.sh'
-    //             // sh 'bash zap.sh'
-    //     }
-    //   }
-    // }
-stage('OWASP ZAP - DAST') {
-    steps {
-        withKubeConfig([credentialsId: 'kubeconfig']) {
-            script {
+  
+        stage('OWASP ZAP - DAST') {
+            steps {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
+                script {
                 try {
                     sh 'docker pull zaproxy/zap-weekly'
                     sh 'chmod +x zap.sh'
@@ -170,11 +162,30 @@ stage('OWASP ZAP - DAST') {
                 } catch (Exception e) {
                     echo "An error occurred: ${e.getMessage()}"
                 }
+              }
             }
+           }
+        }   
+     }
+
+        stage('K8S CIS Benchmark') {
+            steps {
+                script {
+
+                parallel(
+                "Master": {
+                sh "bash cis-master.sh"
+                },
+                "Etcd": {
+                 sh "bash cis-etcd.sh"
+                },
+                "Kubelet": {
+                sh "bash cis-kubelet.sh"
+                }
+             )
+          }
         }
-    }
-}
-    }
+        }
 
     post {
         always {
